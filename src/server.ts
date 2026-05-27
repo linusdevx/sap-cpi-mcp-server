@@ -1,4 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import * as dataStores from './tools/dataStores.js';
 import * as designTime from './tools/designTime.js';
 import * as mpl from './tools/mpl.js';
 import * as partnerDirectory from './tools/partnerDirectory.js';
@@ -16,5 +17,6 @@ export function createServer(): McpServer {
   mpl.register(server);
   partnerDirectory.register(server);
   security.register(server);
+  dataStores.register(server);
   return server;
 }
