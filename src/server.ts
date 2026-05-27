@@ -6,6 +6,7 @@ import * as logs from './tools/logs.js';
 import * as mpl from './tools/mpl.js';
 import * as partnerDirectory from './tools/partnerDirectory.js';
 import * as security from './tools/security.js';
+import * as trace from './tools/trace.js';
 
 export function createServer(): McpServer {
   const server = new McpServer(
@@ -22,5 +23,6 @@ export function createServer(): McpServer {
   dataStores.register(server);
   logs.register(server);
   artifacts.register(server);
+  trace.register(server);
   return server;
 }
