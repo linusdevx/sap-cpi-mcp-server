@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as designTime from './tools/designTime.js';
 import * as mpl from './tools/mpl.js';
 import * as partnerDirectory from './tools/partnerDirectory.js';
+import * as security from './tools/security.js';
 
 export function createServer(): McpServer {
   const server = new McpServer(
@@ -14,5 +15,6 @@ export function createServer(): McpServer {
   designTime.register(server);
   mpl.register(server);
   partnerDirectory.register(server);
+  security.register(server);
   return server;
 }
