@@ -1,4 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import * as artifacts from './tools/artifacts.js';
 import * as dataStores from './tools/dataStores.js';
 import * as designTime from './tools/designTime.js';
 import * as logs from './tools/logs.js';
@@ -20,5 +21,6 @@ export function createServer(): McpServer {
   security.register(server);
   dataStores.register(server);
   logs.register(server);
+  artifacts.register(server);
   return server;
 }
