@@ -1,4 +1,4 @@
-# @linusdevx/sap-cpi-mcp
+# @linusdevx/cpi-mcp-server
 
 MCP server for SAP Cloud Platform Integration (CPI). Query packages, iFlows, message processing logs, partner directory entries, security material, and manage artifact lifecycle via the CPI OData API.
 
@@ -13,7 +13,7 @@ Add to your MCP client config (e.g. Claude Desktop, Cursor):
   "mcpServers": {
     "sap-cpi": {
       "command": "npx",
-      "args": ["-y", "@linusdevx/sap-cpi-mcp"],
+      "args": ["-y", "@linusdevx/cpi-mcp-server"],
       "env": {
         "MCP_CPI_BASE_URL": "https://your-tenant.it-cpi017.cfapps.eu10-002.hana.ondemand.com/api/v1",
         "MCP_CPI_TOKEN_URL": "https://your-tenant.authentication.eu10.hana.ondemand.com/oauth/token",
@@ -132,8 +132,8 @@ Get a service key from the BTP cockpit: navigate to your CPI subaccount → Inst
 ## Local development
 
 ```bash
-git clone https://github.com/linusdevx/sap-cpi-mcp.git
-cd sap-cpi-mcp
+git clone https://github.com/linusdevx/sap-cpi-mcp-server.git
+cd sap-cpi-mcp-server
 npm install
 cp .env.example .env  # then fill in values
 npm test
@@ -159,11 +159,11 @@ MCP_CPI_CLIENT_ID=... MCP_CPI_CLIENT_SECRET=... \
 node dist/index.js
 ```
 
-Then send a `tools/list` request to verify all 43 tools register, followed by a low-impact read like `get_integration_packages`.
+Then send a `tools/list` request to verify all 47 tools register, followed by a low-impact read like `get_integration_packages`.
 
 ## Release flow
 
-CI runs typecheck, format check, and tests on Node 20 and 22 against every PR. The publish workflow runs on `v*` tags and requires an `NPM_TOKEN` secret with publish rights to `@linusdevx/sap-cpi-mcp`. See `CHANGELOG.md` for version history.
+CI runs typecheck, format check, and tests on Node 20 and 22 against every PR. The publish workflow runs on `v*` tags and requires an `NPM_TOKEN` secret with publish rights to `@linusdevx/cpi-mcp-server`. See `CHANGELOG.md` for version history.
 
 ## Contributing
 
