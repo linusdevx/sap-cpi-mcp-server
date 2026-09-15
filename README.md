@@ -148,7 +148,7 @@ Get a service key from the BTP cockpit: navigate to your CPI subaccount → Inst
 
 | Tool | Purpose | Annotation |
 |---|---|---|
-| `download_integration_artifact` | Download iFlow zip to a local path | — |
+| `download_integration_artifact` | Download iFlow zip to a local path | read-only |
 | `upload_integration_artifact` | Create or update an iFlow from a local zip | destructive |
 | `deploy_integration_artifact` | Deploy a design-time artifact (returns TaskId) | destructive |
 | `get_deploy_status` | Poll build/deploy status by TaskId | read-only |
@@ -197,7 +197,14 @@ Then send a `tools/list` request to verify all 47 tools register, followed by a 
 
 ## Release flow
 
-CI runs typecheck, format check, and tests on Node 20 and 22 against every PR. The publish workflow runs on `v*` tags and requires an `NPM_TOKEN` secret with publish rights to `@linusdevx/cpi-mcp-server`. See `CHANGELOG.md` for version history.
+CI runs typecheck, format check, and tests on Node 20 and 22 against every PR. The publish workflow runs on `v*` tags and requires an `NPM_TOKEN` secret with publish rights to `@linusdevx/cpi-mcp-server`. GitHub release notes are generated automatically from commit history on each tag.
+
+### Destructive tool safety
+
+All write/destructive tools (`upload_integration_artifact`, `deploy_integration_artifact`, `undeploy_integration_artifact`, `update_artifact_configuration`, `retry_messaging_messages`, `move_messaging_messages`) require explicit confirmation before executing:
+
+- **MCP elicitation** — when the client supports it (e.g. Claude Desktop), an in-UI confirmation dialog is shown before the operation proceeds.
+- **Fallback** — when the client does not support elicitation, the tool returns a message asking the user to confirm, and the operation only proceeds on a second explicit call.
 
 ## Contributing
 
