@@ -29,7 +29,12 @@ describe('cleanODataResponse', () => {
       },
     };
     expect(cleanODataResponse(input)).toEqual({
-      d: { results: [{ Id: '1', Name: 'a' }, { Id: '2', Children: {} }] },
+      d: {
+        results: [
+          { Id: '1', Name: 'a' },
+          { Id: '2', Children: {} },
+        ],
+      },
     });
   });
 });

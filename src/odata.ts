@@ -106,10 +106,7 @@ function buildUrl(path: string, params?: Record<string, string | undefined>): st
   return s ? `${base}?${s}` : base;
 }
 
-async function fetchWithRetry(
-  url: string,
-  headers: Record<string, string>,
-): Promise<Response> {
+async function fetchWithRetry(url: string, headers: Record<string, string>): Promise<Response> {
   let token = await getAccessToken();
   let response = await fetch(url, {
     headers: { ...headers, Authorization: `Bearer ${token}` },
@@ -150,10 +147,7 @@ export async function odataGet(
   return truncateAtBoundary(JSON.stringify(result, null, 2), MAX_RESPONSE_SIZE);
 }
 
-export async function odataGetStream(
-  path: string,
-  maxBytes = MAX_RESPONSE_SIZE,
-): Promise<string> {
+export async function odataGetStream(path: string, maxBytes = MAX_RESPONSE_SIZE): Promise<string> {
   const response = await fetchWithRetry(buildUrl(path), { Accept: '*/*' });
   const text = await response.text();
   if (text.length <= maxBytes) return text;

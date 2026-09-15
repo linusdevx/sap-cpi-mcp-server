@@ -373,9 +373,7 @@ export function register(server: McpServer): void {
         } catch (e) {
           if (e instanceof CpiError) {
             return {
-              content: [
-                { type: 'text', text: `Value mapping '${id}' version '${ver}' not found` },
-              ],
+              content: [{ type: 'text', text: `Value mapping '${id}' version '${ver}' not found` }],
             };
           }
           throw e;

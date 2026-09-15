@@ -2,7 +2,7 @@
 
 MCP server for SAP Cloud Platform Integration (CPI). Query packages, iFlows, message processing logs, partner directory entries, security material, and manage artifact lifecycle via the CPI OData API.
 
-43 tools across 8 modules — all backed by the CPI OData v2 API.
+47 tools across 9 modules — all backed by the CPI OData v2 API.
 
 ## Install
 
@@ -94,6 +94,15 @@ Get a service key from the BTP cockpit: navigate to your CPI subaccount → Inst
 | `get_jms_brokers` | JMS broker instances |
 | `get_jms_resources` | JMS queue resources |
 | `get_metadata` | OData `$metadata` document (truncated at 50KB) |
+
+### Messaging (`messaging`, 4 tools)
+
+| Tool | Purpose | Annotation |
+|---|---|---|
+| `get_messaging_queues` | List JMS queues with message count and active/exclusive status | read-only |
+| `get_messaging_messages` | List individual JMS messages with retry, sender, receiver, MPL link | read-only |
+| `retry_messaging_messages` | Retry failed JMS messages (`RetryMessagingMessages` function import) | destructive |
+| `move_messaging_messages` | Move JMS messages between queues (`MoveMessagingMessages` function import) | destructive |
 
 ### Logs (`logs`, 1 tool)
 

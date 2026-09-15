@@ -47,6 +47,7 @@ async function loadAllModules(): Promise<Record<string, { register: (s: unknown)
     dataStores: (await import('../src/tools/dataStores.js')) as never,
     logs: (await import('../src/tools/logs.js')) as never,
     artifacts: (await import('../src/tools/artifacts.js')) as never,
+    messaging: (await import('../src/tools/messaging.js')) as never,
     trace: (await import('../src/tools/trace.js')) as never,
   };
 }
@@ -59,11 +60,11 @@ async function resetCaches(): Promise<void> {
 describe('tool registration', () => {
   beforeEach(() => setEnv());
 
-  it('registers exactly 43 tools across 8 modules', async () => {
+  it('registers exactly 47 tools across 9 modules', async () => {
     const { server, tools } = makeFakeServer();
     const modules = await loadAllModules();
     for (const m of Object.values(modules)) m.register(server);
-    expect(tools.size).toBe(43);
+    expect(tools.size).toBe(47);
   });
 
   it('registers one expected tool per module', async () => {
@@ -78,6 +79,7 @@ describe('tool registration', () => {
       'get_variables',
       'get_log_files',
       'download_integration_artifact',
+      'get_messaging_queues',
       'get_run_steps',
     ];
     for (const name of expected) expect(tools.has(name)).toBe(true);
@@ -198,6 +200,20 @@ describe('per-module happy-path smoke', () => {
         `${name} must not declare a top parameter`,
       ).not.toContain('top');
     }
+  });
+
+  it('messaging: get_messaging_queues returns results', async () => {
+    setMockFetch(tokenResp, {
+      status: 200,
+      body: JSON.stringify({ d: { results: [{ queueName: 'q1', numberOfMessages: 5 }] } }),
+    });
+    await resetCaches();
+    const { server, tools } = makeFakeServer();
+    const messaging = await import('../src/tools/messaging.js');
+    messaging.register(server as never);
+
+    const result = await tools.get('get_messaging_queues')!.handler({});
+    expect(JSON.stringify(result)).toContain('q1');
   });
 
   it('trace: get_run_steps returns step list', async () => {

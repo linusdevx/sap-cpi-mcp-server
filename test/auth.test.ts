@@ -98,10 +98,7 @@ describe('auth.getCsrfToken', () => {
         headers: {
           'x-csrf-token': 'csrf-xyz',
         },
-        setCookies: [
-          'JSESSIONID=abc123; Path=/; HttpOnly',
-          'X-CSRF-CK=yes; Path=/',
-        ],
+        setCookies: ['JSESSIONID=abc123; Path=/; HttpOnly', 'X-CSRF-CK=yes; Path=/'],
       },
     );
     const { getCsrfToken, _resetCachesForTest } = await import('../src/auth.js');
