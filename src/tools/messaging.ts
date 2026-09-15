@@ -2,6 +2,9 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { CpiError, odataGet, odataPost } from '../odata.js';
 
+const CONFIRM_FALLBACK =
+  'Confirmation required before proceeding. Please ask the user to confirm they want to perform this action, then call the tool again once confirmed.';
+
 const queryShape = {
   filter: z.string().optional(),
   top: z.string().optional(),
@@ -71,11 +74,30 @@ export function register(server: McpServer): void {
     {
       title: 'Retry messaging messages',
       description:
-        'Retry failed JMS messages via the RetryMessagingMessages function import (POST). Returns the server response string.',
+        'DESTRUCTIVE: Retries ALL failed JMS messages on the tenant via the RetryMessagingMessages function import (POST). This affects the live CPI system and cannot be undone. User confirmation is required before proceeding.',
       inputSchema: {},
       annotations: { destructiveHint: true },
     },
     async () => {
+      const caps = server.server.getClientCapabilities();
+      if (caps?.elicitation) {
+        const r = await server.server.elicitInput({
+          mode: 'form',
+          message: 'This will retry ALL failed JMS messages on the tenant. Proceed?',
+          requestedSchema: {
+            type: 'object',
+            properties: {
+              confirm: { type: 'boolean', title: 'Confirm retry' },
+            },
+            required: ['confirm'],
+          },
+        });
+        if (r.action !== 'accept' || !r.content?.confirm) {
+          return { content: [{ type: 'text', text: 'Cancelled.' }] };
+        }
+      } else {
+        return { content: [{ type: 'text', text: CONFIRM_FALLBACK }] };
+      }
       try {
         const result = await odataPost('RetryMessagingMessages');
         return { content: [{ type: 'text', text: result }] };
@@ -90,11 +112,30 @@ export function register(server: McpServer): void {
     {
       title: 'Move messaging messages',
       description:
-        'Move JMS messages between queues via the MoveMessagingMessages function import (POST). Returns the server response string.',
+        'DESTRUCTIVE: Moves ALL JMS messages between queues on the tenant via the MoveMessagingMessages function import (POST). This affects the live CPI system and cannot be undone. User confirmation is required before proceeding.',
       inputSchema: {},
       annotations: { destructiveHint: true },
     },
     async () => {
+      const caps = server.server.getClientCapabilities();
+      if (caps?.elicitation) {
+        const r = await server.server.elicitInput({
+          mode: 'form',
+          message: 'This will move ALL JMS messages between queues on the tenant. Proceed?',
+          requestedSchema: {
+            type: 'object',
+            properties: {
+              confirm: { type: 'boolean', title: 'Confirm move' },
+            },
+            required: ['confirm'],
+          },
+        });
+        if (r.action !== 'accept' || !r.content?.confirm) {
+          return { content: [{ type: 'text', text: 'Cancelled.' }] };
+        }
+      } else {
+        return { content: [{ type: 'text', text: CONFIRM_FALLBACK }] };
+      }
       try {
         const result = await odataPost('MoveMessagingMessages');
         return { content: [{ type: 'text', text: result }] };

@@ -1,6 +1,6 @@
 {
   "name": "@linusdevx/cpi-mcp-server",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "MCP server for SAP Cloud Platform Integration (CPI) — query packages, iFlows, message processing logs, partner directory, security material, and more via the CPI OData API.",
   "type": "module",
   "license": "MIT",
