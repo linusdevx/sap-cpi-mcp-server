@@ -10,6 +10,9 @@ import {
   uploadArtifact,
 } from '../odata.js';
 
+const CONFIRM_FALLBACK =
+  'Confirmation required before proceeding. Please ask the user to confirm they want to perform this action, then call the tool again once confirmed.';
+
 function asError(e: unknown): { content: [{ type: 'text'; text: string }]; isError: true } {
   const msg = e instanceof CpiError ? e.message : e instanceof Error ? e.message : String(e);
   return { content: [{ type: 'text', text: msg }], isError: true };
@@ -27,6 +30,7 @@ export function register(server: McpServer): void {
         output_path: z.string(),
         version: z.string().optional(),
       },
+      annotations: { readOnlyHint: true },
     },
     async ({ id, output_path, version }) => {
       try {
@@ -47,7 +51,7 @@ export function register(server: McpServer): void {
     {
       title: 'Upload integration artifact',
       description:
-        "Create or update an integration design-time artifact from a local zip file. Use mode 'create' to add a new artifact to a package, or 'update' to replace an existing one.",
+        "DESTRUCTIVE: Create or update an integration design-time artifact on the live CPI tenant from a local zip file. Use mode 'create' to add a new artifact to a package, or 'update' to replace an existing one. This modifies the design-time artifact and cannot be undone.",
       inputSchema: {
         id: z.string(),
         name: z.string(),
@@ -59,6 +63,24 @@ export function register(server: McpServer): void {
       annotations: { destructiveHint: true },
     },
     async ({ id, name, package_id, file_path, mode, version }) => {
+      const caps = server.server.getClientCapabilities();
+      if (caps?.elicitation) {
+        const label = mode === 'create' ? `create artifact '${id}'` : `overwrite artifact '${id}'`;
+        const r = await server.server.elicitInput({
+          mode: 'form',
+          message: `This will ${label} on the live CPI tenant. Proceed?`,
+          requestedSchema: {
+            type: 'object',
+            properties: { confirm: { type: 'boolean', title: `Confirm ${mode}` } },
+            required: ['confirm'],
+          },
+        });
+        if (r.action !== 'accept' || !r.content?.confirm) {
+          return { content: [{ type: 'text', text: 'Cancelled.' }] };
+        }
+      } else {
+        return { content: [{ type: 'text', text: CONFIRM_FALLBACK }] };
+      }
       try {
         if (mode === 'create') {
           const result = await uploadArtifact(
@@ -88,11 +110,28 @@ export function register(server: McpServer): void {
     {
       title: 'Deploy integration artifact',
       description:
-        'Deploy an integration design-time artifact. Returns a TaskId that can be polled with get_deploy_status.',
+        'DESTRUCTIVE: Deploy an integration design-time artifact to the live CPI runtime. This activates the artifact and immediately affects message processing on the tenant. Returns a TaskId that can be polled with get_deploy_status.',
       inputSchema: { id: z.string(), version: z.string().optional() },
       annotations: { destructiveHint: true },
     },
     async ({ id, version }) => {
+      const caps = server.server.getClientCapabilities();
+      if (caps?.elicitation) {
+        const r = await server.server.elicitInput({
+          mode: 'form',
+          message: `This will deploy artifact '${id}' to the live CPI runtime, immediately affecting message processing. Proceed?`,
+          requestedSchema: {
+            type: 'object',
+            properties: { confirm: { type: 'boolean', title: 'Confirm deploy' } },
+            required: ['confirm'],
+          },
+        });
+        if (r.action !== 'accept' || !r.content?.confirm) {
+          return { content: [{ type: 'text', text: 'Cancelled.' }] };
+        }
+      } else {
+        return { content: [{ type: 'text', text: CONFIRM_FALLBACK }] };
+      }
       try {
         const ver = version ?? 'active';
         const result = await odataPost(
@@ -128,11 +167,29 @@ export function register(server: McpServer): void {
     'undeploy_integration_artifact',
     {
       title: 'Undeploy integration artifact',
-      description: 'Undeploy (remove from runtime) an integration artifact by its runtime ID.',
+      description:
+        'DESTRUCTIVE: Undeploy (remove from runtime) an integration artifact on the live CPI tenant by its runtime ID. This immediately stops message processing for the artifact and cannot be undone.',
       inputSchema: { id: z.string() },
       annotations: { destructiveHint: true },
     },
     async ({ id }) => {
+      const caps = server.server.getClientCapabilities();
+      if (caps?.elicitation) {
+        const r = await server.server.elicitInput({
+          mode: 'form',
+          message: `This will undeploy artifact '${id}' from the live CPI runtime, immediately stopping its message processing. Proceed?`,
+          requestedSchema: {
+            type: 'object',
+            properties: { confirm: { type: 'boolean', title: 'Confirm undeploy' } },
+            required: ['confirm'],
+          },
+        });
+        if (r.action !== 'accept' || !r.content?.confirm) {
+          return { content: [{ type: 'text', text: 'Cancelled.' }] };
+        }
+      } else {
+        return { content: [{ type: 'text', text: CONFIRM_FALLBACK }] };
+      }
       try {
         const result = await odataDelete(`IntegrationRuntimeArtifacts('${id}')`);
         return { content: [{ type: 'text', text: `Undeployed '${id}': ${result}` }] };
@@ -169,7 +226,7 @@ export function register(server: McpServer): void {
     {
       title: 'Update artifact configuration',
       description:
-        'Update an externalized parameter value on a design-time artifact. The artifact must be in edit mode (not read-only).',
+        'DESTRUCTIVE: Update an externalized parameter value on a design-time artifact on the live CPI tenant. This modifies the artifact configuration and may affect message processing. The artifact must be in edit mode (not read-only).',
       inputSchema: {
         id: z.string(),
         parameter_key: z.string(),
@@ -179,6 +236,23 @@ export function register(server: McpServer): void {
       annotations: { destructiveHint: true },
     },
     async ({ id, parameter_key, parameter_value, version }) => {
+      const caps = server.server.getClientCapabilities();
+      if (caps?.elicitation) {
+        const r = await server.server.elicitInput({
+          mode: 'form',
+          message: `This will update parameter '${parameter_key}' on artifact '${id}' to '${parameter_value}' on the live CPI tenant. Proceed?`,
+          requestedSchema: {
+            type: 'object',
+            properties: { confirm: { type: 'boolean', title: 'Confirm update' } },
+            required: ['confirm'],
+          },
+        });
+        if (r.action !== 'accept' || !r.content?.confirm) {
+          return { content: [{ type: 'text', text: 'Cancelled.' }] };
+        }
+      } else {
+        return { content: [{ type: 'text', text: CONFIRM_FALLBACK }] };
+      }
       try {
         const ver = version ?? 'active';
         const result = await odataPut(
