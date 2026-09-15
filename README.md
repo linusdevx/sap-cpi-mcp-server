@@ -6,7 +6,22 @@ MCP server for SAP Cloud Platform Integration (CPI). Query packages, iFlows, mes
 
 ## Install
 
-Add to your MCP client config (e.g. Claude Desktop, Cursor):
+Requires Node.js ≥20.
+
+### Claude Code (CLI)
+
+```bash
+claude mcp add sap-cpi \
+  -e MCP_CPI_BASE_URL="https://your-tenant.it-cpi017.cfapps.eu10-002.hana.ondemand.com/api/v1" \
+  -e MCP_CPI_TOKEN_URL="https://your-tenant.authentication.eu10.hana.ondemand.com/oauth/token" \
+  -e MCP_CPI_CLIENT_ID="..." \
+  -e MCP_CPI_CLIENT_SECRET="..." \
+  -- npx -y @linusdevx/cpi-mcp-server
+```
+
+### Claude Desktop
+
+Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```jsonc
 {
@@ -25,7 +40,26 @@ Add to your MCP client config (e.g. Claude Desktop, Cursor):
 }
 ```
 
-Requires Node.js ≥20.
+### Cursor
+
+Add to `.cursor/mcp.json` in your project root (or `~/.cursor/mcp.json` globally):
+
+```jsonc
+{
+  "mcpServers": {
+    "sap-cpi": {
+      "command": "npx",
+      "args": ["-y", "@linusdevx/cpi-mcp-server"],
+      "env": {
+        "MCP_CPI_BASE_URL": "https://your-tenant.it-cpi017.cfapps.eu10-002.hana.ondemand.com/api/v1",
+        "MCP_CPI_TOKEN_URL": "https://your-tenant.authentication.eu10.hana.ondemand.com/oauth/token",
+        "MCP_CPI_CLIENT_ID": "...",
+        "MCP_CPI_CLIENT_SECRET": "..."
+      }
+    }
+  }
+}
+```
 
 ## Environment variables
 
